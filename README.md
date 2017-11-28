@@ -1,3 +1,6 @@
++++
+date = "2017-11-28T18:19:03+07:00"
++++
 # Über dieses Repository
 
 Dieses Repository beschreibt wie Teams mittels Docker ihre gesamten Build-Abhängigkeiten mitbringen können. Es enthält Ausführbaren Beispiel-Code für verschiedene Ansätze sowie Beschreibungen und Vergleiche dieser.
