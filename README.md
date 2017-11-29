@@ -21,6 +21,8 @@ Eigentlich sind davon nur zwei Schritte gewollt.
 1. Code klonen
 2. Software laufen lassen
 
+## Software mit Docker kapseln
+
 In unserem hier beschriebenen Ansatz machen wir exzessiven Gebrauch der Docker Technologie. Diese erlaubt es uns Werkzeuge und wie wir sehen werden auch Abläufe zu kapseln. Der naheliegendste Gebrauch von Docker ist für das Paketieren des Application-Servers. Ein gängiges Beispiel für ein Dockerfile in diesem Fall könnte wie folgt aussehen.
 ```
 FROM tomcat:8
@@ -31,11 +33,9 @@ Hier würde das Web-Archive zunächst mittels Maven oder Gradle gebaut und danac
 
 Schauen wir uns jetzt an wie wir auch den Software-Build in Docker abbilden können.
 
-##### Wie bekommen man nun das Problem mit Docker in den Griff?
+## Der Software Build als Black-Box
 
 In den meisten Fällen führen viele Wege nach Rom. Die Virtualisierung und Containerisierung durch Docker eröffnet die Möglichkeit die Build-Strecke zu abstrahieren und durch durch das Entwicklerteam bereitstellen zu lassen. Dies sorgt dafür, dass die zyklische Abhängigkeit zwischen Entwicklungsteam und Infrastrukturteam aufgeweicht werden kann, weil der Software-Build zur Black-Box wird.  
-
-##### Wie stellt man diese Black-Box bereit?
 
 Ein möglicher Weg ist Kapselung des Software-Builds mit einem "Single Command" Docker `run` und anschließendem Clean-Up, welches als Resultat die gebaute Software im Datei-System ablegt. Bereitgestelllt durch eine `build.sh` kann der Bauplan der Software vollständig durch das Entwicklungsteam bestimmt werden.         
 
@@ -44,7 +44,9 @@ Folgender Ausschnitt zeigt beispielhaft, wie die `build.sh` mit einem `docker ru
 ```bash
 docker run --rm -v `pwd`:/application -w /application <base-image> bash -c "build software && rm -rf temp folder"
 ```
-Mittels `docker build` kann anschließend lokal und auch in einer beliebigen CI/CD dieses Verzeichnis in ein Docker Image verpackt und auf einer beliebigen Instanz ausgeführt werden. 
+Mittels `docker build` kann anschließend lokal und auch in einer beliebigen CI/CD dieses Verzeichnis in ein Docker Image verpackt und auf einer beliebigen Instanz ausgeführt werden.
+
+## Zustandslos durch Multi-Stage Builds
 
 Was sich im ersten Moment als elegante Lösung herausstellt, birgt auf den zweiten Blick jedoch mögliche Gefahren. Gerade mit Hinblick auf eine Integration in eine CI/CD ist die Arbeit auf dem Dateisystem problemtatisch, da oftmals Build Reste zurückbleiben und somit der Speicher- und Aufräumaufwand exponentiell steigt.
 
