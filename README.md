@@ -31,11 +31,11 @@ Hier würde das Web-Archive zunächst mittels Maven oder Gradle gebaut und danac
 
 Schauen wir uns jetzt an wie wir auch den Software-Build in Docker abbilden können.
 
-#####Wie bekommen man nun das Problem mit Docker in den Griff?
+##### Wie bekommen man nun das Problem mit Docker in den Griff?
 
 In den meisten Fällen führen viele Wege nach Rom. Die Virtualisierung und Containerisierung durch Docker eröffnet die Möglichkeit die Build-Strecke zu abstrahieren und durch durch das Entwicklerteam bereitstellen zu lassen. Dies sorgt dafür, dass die zyklische Abhängigkeit zwischen Entwicklungsteam und Infrastrukturteam aufgeweicht werden kann, weil der Software-Build zur Black-Box wird.  
 
-#####Wie stellt man diese Black-Box bereit?
+##### Wie stellt man diese Black-Box bereit?
 
 Ein möglicher Weg ist Kapselung des Software-Builds mit einem "Single Command" Docker `run` und anschließendem Clean-Up, welches als Resultat die gebaute Software im Datei-System ablegt. Bereitgestelllt durch eine `build.sh` kann der Bauplan der Software vollständig durch das Entwicklungsteam bestimmt werden.         
 
@@ -62,4 +62,11 @@ COPY --from=builder <app-target> <destination>
 ```
 Dies hat zur Folge, dass die gebaute Software nicht mehr zwischengespeichert werden muss und auch die komplette Build Umgebung nur temporär in der ersten Build-Stage existiert. Nach Abschluss des Docker Builds wird die gesamte Build Umgebung verworfen und hinterlässt keine Spuren auf dem Dateisystem. Anschließendes Bereinigen von Verzeichnissen ist somit nicht nötig.
 
-Die komplette Build Strecke ist nun zentral in einem Dockerfile beschrieben und kann in einer beliebigen Umgebung zum Build der Software genutzt werden. Durch diesen Schritt erreicht man eine starke Entkopplung zwischen Entwicklung und Infrastrukturbetrieb. Sowohl der Quellcode als auch das Dockerfile mit dem Bauplan werden durch das Entwicklungsteam über Git bereitgestellt. Ein später Build und anschließendes Deployment auf einer Umgebung durch das Operations-Team benötigt keinerlei Wissen über die Software und dessen Build Pipeline.
+Die komplette Build Strecke ist nun zentral in einem Dockerfile beschrieben und kann in einer beliebigen Umgebung zum Build der Software genutzt werden. Durch diesen Schritt erreicht man eine starke Entkopplung zwischen Entwicklung und Infrastrukturbetrieb. Und das resultierende Image enthält nur was auch wirklich benötigt wird. Sowohl der Quellcode als auch das Dockerfile mit dem Bauplan werden durch das Entwicklungsteam über Git bereitgestellt. Ein später Build und anschließendes Deployment auf einer Umgebung durch das Operations-Team benötigt keinerlei Wissen über die Software und dessen Build Pipeline.
+
+Am Ende ist auch für neue Entwickler das erstmalige Ausführen des Codes so einfach wie
+
+1. git clone
+2. docker build -t name .
+3. docker run name
+
