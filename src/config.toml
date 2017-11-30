@@ -8,6 +8,7 @@ theme = "future-imperfect"
     navbarTitle          = "Sample Enterprise"
     categoriesByCount    = true
     viewMorePostLink     = "/blog/"
+    customCSS            = ["default", "/css/custom.css"]
 
 [params.postAmount]
     sidebar = 5
