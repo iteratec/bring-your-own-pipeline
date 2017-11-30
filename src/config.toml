@@ -1,0 +1,31 @@
+baseURL = "/"
+languageCode = "de-DE"
+title = "Sample Hugo Blog"
+theme = "future-imperfect"
+
+[params]
+    description          = "Nice and cool blog site Powered by Hugo"
+    navbarTitle          = "Sample Enterprise"
+    categoriesByCount    = true
+    viewMorePostLink     = "/blog/"
+
+[params.postAmount]
+    sidebar = 5
+
+[params.intro]
+    header    = "Sample Blog"
+    paragraph = "Nice and cool blog site powered by Hugo"
+    about = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent tellus lacus, auctor vehicula molestie quis, tempor quis velit."
+
+[params.intro.pic]
+    src       = "/img/logo.jpg"
+    circle    = true
+    imperfect = true
+    width     = ""
+    alt = "Logo"
+
+[[menu.main]]
+    name = "Home"
+    url = "/"
+    identifier = "home-site"
+    weight = 1

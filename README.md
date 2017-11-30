@@ -1,5 +1,13 @@
 +++
 date = "2017-11-28T18:19:03+07:00"
+author = "Benjamin Brunzel & Marko Rühle"
+title = "Bring your own pipeline"
+description = "How to provide whole deployment pipeline with docker."
+categories = ["Docker"]
+type = "post"
+featured = "docker_logo.png"
+featuredalt = "Docker Logo" 
+featuredpath = "img"
 +++
 # Über dieses Repository
 
