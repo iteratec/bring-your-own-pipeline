@@ -6,7 +6,10 @@ theme = "future-imperfect"
 [params]
     description          = "Nice and cool blog site Powered by Hugo"
     navbarTitle          = "Sample Enterprise"
+    socialAppearAtTop    = true
+    socialAppearAtBottom = true
     categoriesByCount    = true
+    includeReadingTime = true
     viewMorePostLink     = "/blog/"
     customCSS            = ["default", "/css/custom.css"]
 
@@ -30,3 +33,8 @@ theme = "future-imperfect"
     url = "/"
     identifier = "home-site"
     weight = 1
+
+[social]
+    github          = "iteratec/bring-your-own-pipeline"
+    facebook        = "iteratecGmbH"
+    twitter         = "@iteratec"
