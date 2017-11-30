@@ -4,7 +4,7 @@ Dieses Repository beschreibt wie Teams mittels Docker ihre gesamten Build-Abhän
 
 ## Ausführen der Beispielsoftware
 
-Wie wir in unserem [Artikel](./src/content/blog/pipeline.md)! propagieren wird für die Ausführung nur [git](https://git-scm.com/) und [docker](https://docker.io) benötigt.
+Wie wir in unserem [Artikel](./src/content/blog/pipeline.md) propagieren wird für die Ausführung nur [git](https://git-scm.com/) und [docker](https://docker.io) benötigt.
 
 ```bash
 git clone https://github.com/iteratec/bring-your-own-pipeline.git
