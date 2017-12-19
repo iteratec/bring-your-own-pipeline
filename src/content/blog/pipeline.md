@@ -40,7 +40,7 @@ Bereitgestellt in einer `build.sh` sorgt der Docker `run` für das Setup der Bui
 
 Dieses Vorgehen sorgt dafür, dass neben der Abstraktion der Build-Umgebung zudem der Bauplan der Software in einer `build.sh` zentralisiert und transparent ist. Dadurch eröffnet sich die Möglichkeit lokal sowie in einer CI/CD Umgebung gleichermaßen die Software zu bauen, ohne das nötige Vorbereitungen und Setup getätigt werden müssen. Lediglich die Verfügbarkeit von Docker ist eine harte Bedingung.
 
-Doch gerade in einer CI/CD Umgebung birgt dieses Vorgehen Probleme, da die Software Builds durch den "Volume Mount" auf dem Dateisystem des Build-Servers arbeiten und womöglich dort eine Vielzahl an Dateien in unterschiedlichen Größen ablegen und persistieren. Dies sorgt dafür, dass der Speicherbedarf stetig steigt und manueller Bereinigungsaufwand entsteht. Die ersparten Setup und Wartungsaufwände werden somit wieder relativiert.   
+Doch gerade in einer CI/CD Umgebung birgt dieses Vorgehen auch Probleme, da die Software Builds durch den "Volume Mount" auf dem Dateisystem des Build-Servers arbeiten und womöglich dort eine Vielzahl an Dateien in unterschiedlichen Größen ablegen und persistieren. Dies sorgt dafür, dass der Speicherbedarf stetig steigt und manueller Bereinigungsaufwand entsteht. Die ersparten Setup und Wartungsaufwände werden somit wieder relativiert.   
 
 ## Zustandslos durch Multi-Stage Builds
 
@@ -102,3 +102,7 @@ Durch diese Kapselung und Trennung von Artefakt-Image und Base-Image Erzeugung i
 docker build . -t blog-app:1.0.0 --build-arg APP_DIST_IMAGE=blog-app-target:1.0.0
 ```
 Als Ergebnis resultiert ebenfalls ein lauffähiges Docker Image welches auf einer beliebigen Instanz ausgeführt werden kann.  
+
+## Fazit
+
+Durch Docker und die Fähigkeit der Multi-Stage Docker Builds ist es möglich den Software Build vollständig zu abstrahieren. Teils aufwändige Setup's von Build Umgebungen können eingespart werden und ermöglichen frühzeitig die erste produktive Zeile Code eines Entwicklers. Auch Aufwände innerhalb der CI/CD entfallen, da keine Vielzahl an Build Tools gepflegt und gewartet werden müssen. Zudem weichen die Abhängigkeiten zwischen Entwicklung und Betrieb auf, da die Entwickler selbst die verwendeten Technologien bestimmen können ohne durch Umgebungen limitiert zu sein. Ein wesentlicher Faktor in der Zeit des verteilten kollaborativen Arbeitens. Durch die Definition der Dockerfiles durch einen Entwickler wird der Software Build zur Black-Box und funktioniert auf jeder Umgebung gleich. Einzig und allein nötig sind Git und Docker!
