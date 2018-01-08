@@ -90,20 +90,45 @@ Es ist jedoch nicht immer von Vorteil, wenn das Software-Artefakt stark mit eine
 
 Aber auch für dieses Problem liefert Docker einen Lösungsansatz, welcher auf den Multi-Stage Docker Build setzt. Wie im Dockerfile ersichtlich kann der Multi-Stage Build ebenfalls genutzt werden, um das Software Artefakt zu bauen und anschließend in einem Docker Image zu bündeln. Hierbei empfielt sich das "Scratch" Image. Dadurch bleibt das eigentlich Artefakt Image minimal klein und belegt keinen unnötigen Speicher, was besonders beim Cloud-Hosting interessant ist. 
 ```dockerfile
-FROM <base-image> as bundler
-ADD source code
-RUN install build tools
-RUN build application
-RUN extract version
 
+FROM debian:buster-slim as builder
+
+# Install Build Tools
+RUN apt-get -qq update
+RUN DEBIAN_FRONTEND=noninteractive apt-get -qq install \
+      -y --no-install-recommends \
+      python-pygments \
+      git \
+      ca-certificates \
+      asciidoc \
+      hugo
+
+# Generate Sources
+RUN mkdir sample-blog
+RUN hugo new site ./sample-blog
+
+# Copy Source Code
+ADD src/ ./sample-blog/
+
+# Perform Build
+RUN git clone \
+      https://github.com/jpescador/hugo-future-imperfect.git \
+      ./sample-blog/themes/future-imperfect
+RUN cd sample-blog && hugo
+
+# new empty build stage
 FROM scratch
-COPY --from=bundler /app/build /
+# include resulting assets
+COPY --from=bundler ./sample-blog/public/ /
+# include version string (e.g. 0.1.0) in /version
 COPY --from=bundler /version /
 ```
 Durch diesen Schritt wird das eigentliche Software Artefakt in ein Docker Image gebündelt und kann anschließend in einer Docker Registry versioniert abgelegt werden. Da das Docker Image selbst jedoch keinen Bezug zum Inhalt hat, muss vor dem Upload in die Docker Registry das Image passend zur Version des Artefakts getaggt werden. Diese Information kann das Docker Image selbst zum Beispiel "by convention" in einem Version-File bereitstellen und nach dem `docker build` über `docker export` extrahiert werden.   
 ```bash
+#!/bin/bash
 docker build . -t blog-app-target:latest
 
+# extract version string
 id=$(docker create blog-app-target:latest '')
 APP_VERSION=$(docker export ${id} | tar -xO version)
 docker rm -v ${id}
