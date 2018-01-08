@@ -12,9 +12,9 @@ featuredpath = "img"
 
 # Bring Your Own Pipeline
 
-Ein neuer Tag, ein neues Projekt. Ähnlich schnell wie die Lebenszyklen von Technologien wechselt mitunter der Projektkontext eines Software Developers. Mit diesem Wechsel einher ergeben sich in den meisten Fällen Umstellungen auf andere Programmiersprachen, Technologien und Build Tools. Dank Git ist das projektspezifische Code Repository schnell gefunden und geklont. Um die Software nun jedoch zu modifizieren und dann auszuführen zu können, wird üblicherweise eine Vielzahl an Build-Werkzeugen benötigt, welche zunächst installiert werden müssen. Wie genau die Entwicklungs- und Buildumgebung aussieht, aufgesetzt und ausgeführt wird ist oft auf eine "Getting Started" Seite im Wiki-Space oder in einer "Readme" Datei beschrieben. Bei älteren Java Projekten beispielsweise folgt anschließend noch das Setup eines Applikationsservers oder einer Runtime Umgebung. Der eigentlich einfache Workflow "Code klonen, Software laufen lassen und entwickeln" wächst zu einer langen ToDo-Liste an, welche zunächst abgearbeitet werden muss, um die erste produktive Zeile Code zu schreiben. In der heutigen Zeit ein No-Go! Doch wie kann dieser Setup Aufwand minimiert werden?
+Ein neuer Tag, ein neues Projekt. Ähnlich schnell wie die Lebenszyklen von Technologien wechselt mitunter der Projektkontext eines Software Developers. Mit diesem Wechsel einher ergeben sich in den meisten Fällen Umstellungen auf andere Programmiersprachen, Technologien und Build Tools. Dank Git ist das projektspezifische Code Repository schnell gefunden und lokal geklont. Um die Software nun jedoch zu modifizieren und dann auszuführen zu können, wird üblicherweise eine Vielzahl an Build-Werkzeugen benötigt, welche zunächst installiert werden müssen. Wie genau die Entwicklungs- und Buildumgebung aussieht, aufgesetzt und ausgeführt wird ist oft auf eine "Getting Started" Seite im Wiki-Space oder in einer "README" Datei beschrieben. Bei älteren Java Projekten beispielsweise folgt anschließend noch das Setup eines Applikationsservers oder einer Runtime Umgebung. Der eigentlich einfache Workflow "Code klonen, Software bauen und laufen lassen" wächst zu einer langen ToDo-Liste an, welche zunächst abgearbeitet werden muss, bevor die erste produktive Zeile Code geschrieben werden kann. In der heutigen Zeit ein No-Go! Doch wie kann dieser Setup Aufwand minimiert werden?
 
-Basierend auf einer [Beispielanwendung](https://github.com/iteratec/bring-your-own-pipeline) und dem exzessiven Gebrauch der Docker Technologie soll dies im Folgenden illustiert werden. 
+Basierend auf einer [Beispielanwendung](https://github.com/iteratec/bring-your-own-pipeline) und dem exzessiven Gebrauch der Docker Container Laufzeitumgebung und deren Kommandozeilen Werkzeugen, soll dies im Folgenden illustiert werden. 
    
 ## Software mit Docker kapseln
 
@@ -24,39 +24,63 @@ FROM tomcat:8
 ADD "*.war" webapps/
 ```
 
-Nach einem lokalen Build mit Maven oder Gradle wird über `docker build` das Artefakt in das Docker Image kopiert. Damit ist zwar der lokale Applikationsserver gekapselt, jedoch muss der Entwickler alle nötigen Build-Tools vorinstalliert und gegebenenfalls noch vorkonfiguriert haben, bevor er das Docker-Image bauen kann. Das selbe trifft übrigens auf einen existierenden Build- oder CI/CD-Server zu. Ebenfalls wie beim Entwickler müssen dort sämtliche Build-Abhängigkeiten der Projekte, welche gebaut werden sollen, verfügbar sein. Dieses Problem sorgt neben dem hohen Setup Aufwand für Entwickler zudem zu kontinuierlichen Aufwänden in der CI/CD, da neben der Installation auch Wartung und Pflege dieser Build Tools von Nöten ist.
+Nach einem lokalen Build mit Maven oder Gradle wird über `docker build` das Artefakt in das Docker Image kopiert. Damit ist zwar der lokale Applikationsserver gekapselt, jedoch muss der Entwickler alle nötigen Build-Tools vorinstalliert, und gegebenenfalls, vorkonfiguriert haben, bevor er das Docker-Image bauen kann. Das selbe trifft übrigens auf einen existierenden Build- oder CI/CD (Continous Integration / Continous Deployment)-Server zu. Denn auch dort müssen, wie auf den Entwickler-PCs, sämtliche Build-Abhängigkeiten der zu bauenden Projekte verfügbar sein. Dadurch wird, neben dem Aufwand für das Setup jedes Entwicklers, kontinuierlicher Aufwand für die Wartung und Pflege eben dieser Build-Tools in der CI/CD erzeugt.
 
-Somit fehlt neben der Abstraktion des Applikationsservers noch die Abstraktion der Build Tools und viel mehr die Abstraktion des kompletten Software Builds, damit sowohl lokal beim Entwickler als auch in einer CI/CD Umgebung der Code, ohne das aufwändige Setup, gebaut werden kann. 
+Durch das Kapseln des Applikationsservers müssen sich die Entwickler nicht mehr um die Details der Installation und Konfiguration von z.B. Tomcat machen. Man könnte also sagen diese Details werden durch den Einsatz von Docker abstrahiert.
 
 ## Der Software Build als Black-Box
 
-Ziel ist es die Fähigkeiten der Virtualisierung und Containerisierung von Docker zu nutzen, um nicht nur Software Komponenten, wie den Applikationsserver, zu abstrahieren, sondern eine komplette Build-Umgebung bereitzustellen in der der Code gebaut werden kann.
+Wir wollen aber noch einen Schritt weiter gehen und nicht nur den Einsatz des Applikationsservers sondern auch die Details des gesamten Software Builds auf ähnliche Art abstrahieren. Ziel ist es die Fähigkeiten der Container-Virtualisierung durch Docker zu nutzen, um eine komplette Build-Umgebung bereitzustellen in der der Code gebaut werden kann.
  
 Ein möglicher Weg ist Kapselung des Setups der Build-Umgebung mit einem "Single Command" Docker `run` wie im folgenden Beispiel dargestellt.
 ```bash
-docker run --rm -v `pwd`:/ <base-image> bash -c "setup build-env && build software"
+docker run --rm -v `pwd`:/build debian:buster-slim bash -c "cd /build && sudo apt-get install build-deps && ./build.sh"
 ```
-Bereitgestellt in einer `build.sh` sorgt der Docker `run` für das Setup der Build Umgebung und dem anschließenden Build der Software. Das Code Repository wird dafür als "Volume" in den Container via `-v` inkludiert und erlaubt lesende und schreibende Zugriffe auf das Code Repository aus dem Container heraus. Abschließend wird der Container per `--rm` gestoppt und entfernt. Als Ergebnis liegt das gebaute Artefakt vor und kann anschließend in einen containerisierten Applikationsserver deployt werden.
+Bereitgestellt in einer `build.sh` sorgt der Docker `run` für das Setup der Build Umgebung und dem anschließenden Build der Software. Das Code Repository wird dafür als "Volume" in den Container via `-v` inkludiert und erlaubt lesende und schreibende Zugriffe auf das Code Repository aus dem Container heraus. Abschließend wird der beendete Container durch `--rm` entfernt. Als Ergebnis liegt das gebaute Artefakt vor und kann anschließend in einen containerisierten Applikationsserver deployt werden.
 
 Dieses Vorgehen sorgt dafür, dass neben der Abstraktion der Build-Umgebung zudem der Bauplan der Software in einer `build.sh` zentralisiert und transparent ist. Dadurch eröffnet sich die Möglichkeit lokal sowie in einer CI/CD Umgebung gleichermaßen die Software zu bauen, ohne das nötige Vorbereitungen und Setup getätigt werden müssen. Lediglich die Verfügbarkeit von Docker ist eine harte Bedingung.
 
-Doch gerade in einer CI/CD Umgebung birgt dieses Vorgehen auch Probleme, da die Software Builds durch den "Volume Mount" auf dem Dateisystem des Build-Servers arbeiten und womöglich dort eine Vielzahl an Dateien in unterschiedlichen Größen ablegen und persistieren. Dies sorgt dafür, dass der Speicherbedarf stetig steigt und manueller Bereinigungsaufwand entsteht. Die ersparten Setup und Wartungsaufwände werden somit wieder relativiert.   
+Doch gerade in einer CI/CD Umgebung birgt dieses Vorgehen auch Probleme, da die Software Builds durch den "Volume Mount" auf dem Dateisystem des Build-Servers arbeiten und womöglich dort eine Vielzahl an Dateien in unterschiedlichen Größen ablegen und persistieren. Dies sorgt dafür, dass der Speicherbedarf stetig steigt und manueller Bereinigungsaufwand entsteht. Das Vorgehen ist dadurch zustandsbehaftet. Im folgenden wollen wir diesen persitenten Zustand ablegen.   
 
 ## Zustandslos durch Multi-Stage Builds
 
-Seit der Version 17.05 schafft Docker für diese Problematik jedoch ebenfalls Abhilfe und führt die Multi-Stage Builds ein. Wie das folgende Beispiel zeigt, ist ein "Shared Volume" nicht mehr nötig. Vielmehr existiert die Möglichkeit innerhalb eines Docker Builds Dateien zwischen "Build Stages" auszustauschen.
- 
+Seit der Version 17.05 schafft Docker für diese Problematik ebenfalls Abhilfe und führt die Multi-Stage Builds ein. Wie das folgende Beispiel zeigt, ist ein "Shared Volume" nicht mehr nötig. Vielmehr existiert die Möglichkeit innerhalb eines Docker Builds Dateien zwischen verschiedenen Image-Layern, unseren "Build Stages", auszustauschen.
+
 ```dockerfile
-FROM <base-image> as builder
+FROM debian:buster-slim as builder
 
-ADD source code
-RUN install build tools
-RUN build application
+# Install Build Tools
+RUN apt-get -qq update
+RUN DEBIAN_FRONTEND=noninteractive apt-get -qq install \
+      -y --no-install-recommends \
+      python-pygments \
+      git \
+      ca-certificates \
+      asciidoc \
+      hugo
 
-FROM <base-image>
-COPY --from=builder <app-target> <destination>
+# Generate Sources
+RUN mkdir sample-blog
+RUN hugo new site ./sample-blog
+
+# Copy Source Code
+ADD src/ ./sample-blog/
+
+# Perform Build
+RUN git clone \
+      https://github.com/jpescador/hugo-future-imperfect.git \
+      ./sample-blog/themes/future-imperfect
+RUN cd sample-blog && hugo
+
+# Start new layer from differen base image
+FROM nginx:1.13-alpine
+
+# Copy Build Results from Builder
+COPY --from=builder ./sample-blog/public/ /usr/share/nginx/html
 ```
-Dies hat zur Folge, dass die gebaute Software nicht mehr zwischengespeichert werden muss und auch die komplette Build Umgebung nur temporär in der ersten Build-Stage existiert. Nach Abschluss des Docker Builds wird die gesamte Build Umgebung verworfen und hinterlässt keine Spuren auf dem Dateisystem. Anschließendes Bereinigen von Verzeichnissen ist somit nicht nötig. 
+Die grundsätzliche Struktur unterscheidet sich hierbei nicht von den Dockerfiles wie wir sie kennen. Neu ist jedoch dass zusätzliche Image layer mit erneutem `FROM` eingefügt werden können. Diese können wie im beispiel auch benamt werden. Wichtig ist dass jeweils nur die letzte "Build Stage" in das resultierende Image übernommen wird. Der Clou ist jedoch dass einzelne Dateien oder Verzeichnisse aus vorhergehenden Stages übernommen werden können. Dazu bietet die `COPY` Instruktion nun einen zusätzlichen `--from` Parameter. Nähere Details zu dem Feature gibt es im [Docker User Guide](https://docs.docker.com/engine/userguide/eng-image/multistage-build/).
+
+Mit einem Multi-Stage Docker Build muss die gebaute Software nicht mehr auf dem Host zwischengespeichert werden. Zudem existiert die komplette Build Umgebung nur temporär in der ersten Build-Stage. Nach Abschluss des Docker Builds wird die gesamte Build Umgebung verworfen und hinterlässt keine Spuren auf dem Dateisystem. Anschließendes Bereinigen von Verzeichnissen ist somit nicht nötig. 
 
 Die komplette Build Strecke ist nun zentral in einem Dockerfile beschrieben und kann in einer beliebigen Umgebung per `docker build` zum Build der Software genutzt werden. Als Resultat entsteht ein Docker Image, welches nur die gebauten Artefakte enthält und diese unter anderem gleich in eine containerisierte Umgebung wie z.B einen Applikationsserver deployt. Dadurch wird keinerlei Wissen über die Software und dessen Build Pipeline benötigt, was die lokale Arbeit deutlich vereinfacht und nötige Abhängigkeiten innerhalb der CI/CD reduziert. Sowohl lokal als auch in einer CI/CD Umgebung sorgt der Workflow "Git klonen, Docker Image bauen und in einer Umgebung ausführen" für lauffähige Software.
 
